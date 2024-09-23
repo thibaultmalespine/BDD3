@@ -1,5 +1,7 @@
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 public class TestConnection {
 
 	public static void main(String[] args) {
@@ -11,7 +13,7 @@ public class TestConnection {
 	      Class.forName("org.postgresql.Driver");
 	      
 	      //étape 2: créer l'objet de connexion
-	      Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/nomBase","login","modepasse");
+	      Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/tp1_user","postgres","postgres");
 	      
 	      //étape 3: créer l'objet statement 
 	      Statement stmt = conn.createStatement();
