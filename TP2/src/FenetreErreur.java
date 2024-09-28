@@ -8,11 +8,9 @@ import javax.swing.JLabel;
 
 public class FenetreErreur extends JFrame implements MouseListener{
 	
-	private String message;
 	
 	public FenetreErreur(String message) {
 		super("Erreur");
-		this.message = message;
 		this.add(new JLabel(message),BorderLayout.CENTER);
 		JButton b = new JButton("ok");
 		this.add(b,BorderLayout.SOUTH);

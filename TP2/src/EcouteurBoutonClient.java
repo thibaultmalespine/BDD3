@@ -4,26 +4,26 @@ import java.awt.event.MouseListener;
 import java.sql.*;
 import javax.swing.JTextField;
 
-public class EcouteurBoutonEditeur implements MouseListener{
+public class EcouteurBoutonClient implements MouseListener{
 	
-	private JTextField jt1, jt2;
-	private FenetreEditeur f;
+	private JTextField jtNom, jtPrenom, jtEmail;
+	private FenetreClient f;
 	private static String URL = "jdbc:postgresql://localhost:5432/tp1_user";// tp1_user est le nom de la base
 	private static String login = "postgres"; // mettre votre login
 	private static String password = "postgres"; // mettre votre mot de passe
 	private Connection conn;
-	private String nomEditeur;
-	private String adresseEditeur;
+	private String emailClient;
 	
-	public EcouteurBoutonEditeur(JTextField jt1, JTextField jt2, FenetreEditeur f){
+	public EcouteurBoutonClient(JTextField jtNom, JTextField jtPrenom, JTextField jtEmail, FenetreClient f){
 		
-		this.jt1 = jt1;
-		this.jt2 = jt2;
+		this.jtNom = jtNom;
+		this.jtPrenom = jtPrenom;
+		this.jtEmail = jtEmail;
 		this.f = f;
 		
 	}
 
-	@Override
+    @Override
 	public void mouseClicked(MouseEvent e){
 		// TODO Auto-generated method stub
 		try {
@@ -32,15 +32,14 @@ public class EcouteurBoutonEditeur implements MouseListener{
 			conn = DriverManager.getConnection(URL, login, password);
 			
 			// requetePreparee est une requête précompilée : cela permet d'éviter les injections sql...
-			PreparedStatement requetePreparee = conn.prepareStatement("INSERT INTO editeur(\"nomEditeur\",adresse) VALUES (?,?)");
+			PreparedStatement requetePreparee = conn.prepareStatement("INSERT INTO client(\"nomClient\",\"prenomClient\",\"emailClient\") VALUES (?,?,?)");
 			
-			// on vérifie si le nom de l'auteur est nul 
-			nomEditeur = (jt1.getText().trim().length() != 0) ? jt1.getText().trim() : null;
-			// on vérifie si l'adresse de l'auteur est nulle 
-			adresseEditeur = (jt2.getText().trim().length() != 0) ? jt2.getText().trim() : null;
-			
-			requetePreparee.setString(1,nomEditeur);
-			requetePreparee.setString(2,adresseEditeur);
+            // on vérifie si l'email n'est pas nulle
+            emailClient = (jtEmail.getText().trim().length() != 0) ? jtEmail.getText().trim() : null;
+
+			requetePreparee.setString(1,jtNom.getText());
+			requetePreparee.setString(2,jtPrenom.getText().trim());
+			requetePreparee.setString(3,emailClient);
 			
 			requetePreparee.executeUpdate();
 			
@@ -53,13 +52,13 @@ public class EcouteurBoutonEditeur implements MouseListener{
 			String messageErreur = "<html>";
 			switch (erreurSQL.getSQLState()) {
 				case "23502":
-					messageErreur += (nomEditeur == null) ? "<p>Le nom de l'éditeur doit être renseigné</p>" : "";
-					messageErreur += (adresseEditeur == null) ? "<p>L'adresse de l'éditeur doit être renseignée<p>" : "";
+					messageErreur += (emailClient == null) ? "<p>L'email doit être renseigné</p>" : "";
 					break;
-				case "23505":
-					messageErreur += "<p>Cette éditeur est déjà connu dans la base</p>";
-					break;
+                case "23505":
+					messageErreur += "<p>Cet email est déjà connu dans la base de donnée</p>";
+                    break;
 				default:
+                    messageErreur += erreurSQL.getMessage();
 					break;
 			}
 			messageErreur += "</html>";
