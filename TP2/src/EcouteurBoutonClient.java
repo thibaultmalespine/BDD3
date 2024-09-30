@@ -12,7 +12,6 @@ public class EcouteurBoutonClient implements MouseListener{
 	private static String login = "postgres"; // mettre votre login
 	private static String password = "postgres"; // mettre votre mot de passe
 	private Connection conn;
-	private String emailClient;
 	
 	public EcouteurBoutonClient(JTextField jtNom, JTextField jtPrenom, JTextField jtEmail, FenetreClient f){
 		
@@ -35,7 +34,7 @@ public class EcouteurBoutonClient implements MouseListener{
 			PreparedStatement requetePreparee = conn.prepareStatement("INSERT INTO client(\"nomClient\",\"prenomClient\",\"emailClient\") VALUES (?,?,?)");
 			
             // on vérifie si l'email n'est pas nulle
-            emailClient = (jtEmail.getText().trim().length() != 0) ? jtEmail.getText().trim() : null;
+            String emailClient = (jtEmail.getText().trim().length() != 0) ? jtEmail.getText().trim() : null;
 
 			requetePreparee.setString(1,jtNom.getText());
 			requetePreparee.setString(2,jtPrenom.getText().trim());
@@ -52,7 +51,7 @@ public class EcouteurBoutonClient implements MouseListener{
 			String messageErreur = "<html>";
 			switch (erreurSQL.getSQLState()) {
 				case "23502":
-					messageErreur += (emailClient == null) ? "<p>L'email doit être renseigné</p>" : "";
+					messageErreur += "<p>L'email doit être renseigné</p>";
 					break;
                 case "23505":
 					messageErreur += "<p>Cet email est déjà connu dans la base de donnée</p>";

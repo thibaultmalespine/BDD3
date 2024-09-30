@@ -15,7 +15,7 @@ public class FenetreClient extends JFrame{
 		JPanel p1 = new JPanel(new GridLayout(3,1));
 		JPanel p2 = new JPanel(new GridLayout(3,1));
 		this.nomClient = new JLabel("nom du client : ");
-		this.prenomClient = new JLabel("adresse du client : ");
+		this.prenomClient = new JLabel("prenom du client : ");
 		this.emailClient = new JLabel("email du client : ");
 		this.jtNom = new JTextField();
 		this.jtPrenom = new JTextField();
