@@ -16,41 +16,49 @@ import javax.swing.JComboBox;
 
 public class FenetreAuteur extends JFrame{
 	
-	private JLabel nomAuteur, prenomAuteur, emailAuteur, contratAuteurEditeur;
+	private JLabel nomAuteur, prenomAuteur, emailAuteur, contratAuteurEditeur1, contratAuteurEditeur2;
 	private JTextField jtNom, jtPrenom, jtEmail;
-    private JComboBox<String> jcEditeurs;
+    private JComboBox<String> jcEditeurs1, jcEditeurs2;
 	private JButton b;
 	
 	public FenetreAuteur(){
 		super("création d'un auteur");
 		this.setLayout(new BorderLayout());
-		JPanel p1 = new JPanel(new GridLayout(4,1));
-		JPanel p2 = new JPanel(new GridLayout(4,1));
+		JPanel p1 = new JPanel(new GridLayout(5,1));
+		JPanel p2 = new JPanel(new GridLayout(5,1));
 		this.nomAuteur = new JLabel("nom de l'auteur : ");
 		this.prenomAuteur = new JLabel("prenom de l'auteur : ");
 		this.emailAuteur = new JLabel("email de l'auteur : ");
-        this.contratAuteurEditeur = new JLabel("contrat avec : ");
+        this.contratAuteurEditeur1 = new JLabel("contrat avec : ");
+        this.contratAuteurEditeur2 = new JLabel("contrat avec : ");
 		this.jtNom = new JTextField();
 		this.jtPrenom = new JTextField();
 		this.jtEmail = new JTextField();
-        this.jcEditeurs = new JComboBox<>(this.getEditeurs());
+        this.jcEditeurs1 = new JComboBox<>(this.getEditeurs());
+        this.jcEditeurs2 = new JComboBox<>(this.getEditeurs());
 		this.b = new JButton("envoyer");
 		p1.add(nomAuteur);
 		p1.add(prenomAuteur);
 		p1.add(emailAuteur);
-        p1.add(contratAuteurEditeur);
+        p1.add(contratAuteurEditeur1);
+        p1.add(contratAuteurEditeur2);
 		p2.add(jtNom);
 		p2.add(jtPrenom);
 		p2.add(jtEmail);
-        p2.add(jcEditeurs);
+        p2.add(jcEditeurs1);
+        p2.add(jcEditeurs2);
 		this.add(p1,BorderLayout.WEST);
 		this.add(p2,BorderLayout.CENTER);
 		this.add(b,BorderLayout.SOUTH);
-		b.addMouseListener(new EcouteurBoutonAuteur(jtNom,jtPrenom,jtEmail,jcEditeurs,this));
+		b.addMouseListener(new EcouteurBoutonAuteur(jtNom,jtPrenom,jtEmail,jcEditeurs1,jcEditeurs2,this));
 		this.setSize(400,250);
 		this.setVisible(true);
 	}
 	
+	/**
+	 * retourne un vector de chaine de caractère contenant l'ensemble des noms des éditeurs
+	 * @return
+	 */
     private Vector<String> getEditeurs(){
         Vector<String> editeurs = new Vector<>();
 

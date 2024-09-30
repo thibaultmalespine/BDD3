@@ -9,27 +9,28 @@ import javax.swing.JTextField;
 public class EcouteurBoutonAuteur implements MouseListener{
 	
 	private JTextField jtNom, jtPrenom, jtEmail;
-    private JComboBox<String> jcEditeurs;
+    private JComboBox<String> jcEditeurs1, jcEditeurs2;
 	private FenetreAuteur f;
 	private static String URL = "jdbc:postgresql://localhost:5432/tp1_user";// tp1_user est le nom de la base
 	private static String login = "postgres"; // mettre votre login
 	private static String password = "postgres"; // mettre votre mot de passe
 	private Connection conn;
     private String emailAuteur;
+    private int noAuteur;
 	
-	public EcouteurBoutonAuteur(JTextField jtNom, JTextField jtPrenom, JTextField jtEmail, JComboBox<String> jcEditeurs,FenetreAuteur f){
-		
+	public EcouteurBoutonAuteur(JTextField jtNom, JTextField jtPrenom, JTextField jtEmail, JComboBox<String> jcEditeurs1, JComboBox<String> jcEditeurs2,FenetreAuteur f){	
 		this.jtNom = jtNom;
 		this.jtPrenom = jtPrenom;
 		this.jtEmail = jtEmail;
-		this.jcEditeurs = jcEditeurs;
-        this.f = f;
-		
+		this.jcEditeurs1 = jcEditeurs1;
+		this.jcEditeurs2 = jcEditeurs2;
+        this.f = f;	
 	}
+
     /**
      * Créer une connexion avec la BDD
      */
-    public void startConnexion() {
+    private void startConnexion() {
         try {
             Class.forName("org.postgresql.Driver");
 			conn = DriverManager.getConnection(URL, login, password);
@@ -41,7 +42,7 @@ public class EcouteurBoutonAuteur implements MouseListener{
     /**
      * Mets fin à la connexion avec la BDD
      */
-    public void endConnexion() {
+    private void endConnexion() {
         try {
             conn.close();
         } catch (Exception e) {
@@ -50,12 +51,10 @@ public class EcouteurBoutonAuteur implements MouseListener{
     }
 
     /**
-     * Ajoute un auteur à la BDD
+     * Ajoute l'auteur à la BDD
      */
-    private void addAuteur() throws Exception{
-        // on vérifie que l'email ne soit pas nulle
-        emailAuteur = (jtEmail.getText().trim().length() != 0) ? jtEmail.getText().trim() : null;
-        
+    private void addAuteur() throws SQLException{
+                
         // insertIntoAuteur est une requête précompilée : cela permet d'éviter les injections sql...
         PreparedStatement insertIntoAuteur = conn.prepareStatement("INSERT INTO auteur(\"nomAuteur\",\"prenomAuteur\",\"emailAuteur\") VALUES (?,?,?)");
           
@@ -68,23 +67,69 @@ public class EcouteurBoutonAuteur implements MouseListener{
     }
 
     /**
+     * Supprime l'auteur de la BDD et les contrats associés
+     */
+    private void removeAuteurAndContrat(){
+        try {
+            // récupérer les contrats avec les editeurs de l'auteur
+            PreparedStatement getContratEditeur = conn.prepareStatement("SELECT \"unEditeur\" FROM contrat WHERE \"unAuteur\" = ?");
+            getContratEditeur.setInt(1, noAuteur);
+            // supprimer tous les contrats
+            ResultSet contratsEditeurs = getContratEditeur.executeQuery();
+            while (contratsEditeurs.next()) {
+                String nomEditeur = contratsEditeurs.getString(1);
+                PreparedStatement removeContrat = conn.prepareStatement("DELETE FROM contrat WHERE \"unEditeur\" = ? AND \"unAuteur\" = ?" );
+                removeContrat.setString(1, nomEditeur);
+                removeContrat.setInt(2, noAuteur);
+                removeContrat.executeUpdate();
+            }   
+
+            // supprimer l'auteur
+            PreparedStatement removeAuteur = conn.prepareStatement("DELETE FROM auteur WHERE \"noAuteur\" = ? ");            
+            removeAuteur.setInt(1,noAuteur);
+    
+            // on exécute la requête
+            removeAuteur.executeUpdate();
+            
+        } catch (Exception e) {
+            System.out.println("Erreur lors de la suppression de l'auteur : "+e.getMessage());
+        }
+    }
+
+    /**
      * Ajoute un contrat à la BDD
      */
-    private void addContrat() throws Exception{
+    private void addContrat() throws SQLException{
+        
+        String[] editeursSelectionnés = {(String) jcEditeurs1.getSelectedItem(), (String) jcEditeurs2.getSelectedItem()};  
+
+        for (String editeur : editeursSelectionnés) {   
+    
+            // on créer la requête
+            PreparedStatement insertIntoContrat = conn.prepareStatement("INSERT INTO contrat(\"unEditeur\",\"unAuteur\") VALUES(?,?)");
+            insertIntoContrat.setString(1, editeur);
+            insertIntoContrat.setInt(2, noAuteur);
+            
+            // on exécute la requête
+            insertIntoContrat.executeUpdate();
+           
+        }  
+    }
+
+    /**
+     * Réupère le numéro de l'auteur dans la BDD à partir de son email
+     * @param emailAuteur
+     * @return
+     */
+    private int getNoAuteur(String emailAuteur) throws SQLException{
         // on récupère le numéro de l'auteur associé à l'email 
         PreparedStatement getnoAuteur = conn.prepareStatement("SELECT \"noAuteur\" FROM auteur WHERE \"emailAuteur\" = ?");
         getnoAuteur.setString(1, emailAuteur);
         ResultSet result = getnoAuteur.executeQuery();
         result.next();
         int noAuteur = result.getInt(1);
-        // on créer la requête
-        PreparedStatement insertIntoContrat = conn.prepareStatement("INSERT INTO contrat(\"unEditeur\",\"unAuteur\") VALUES(?,?)");
-        insertIntoContrat.setString(1, (String) jcEditeurs.getSelectedItem());
-        insertIntoContrat.setInt(2, noAuteur);
-        
-        // on exécute la requête
-        insertIntoContrat.executeUpdate();
-        
+
+        return noAuteur;
     }
 
     /**
@@ -106,6 +151,7 @@ public class EcouteurBoutonAuteur implements MouseListener{
                     String messageTrigger = erreurSQL.getMessage().split("Where")[0];
                     messageTrigger = messageTrigger.split("ERROR:")[1];
                     messageErreur += "<p>"+messageTrigger+"</p>";
+                    removeAuteurAndContrat();
                     break;
 				default:
                     messageErreur += erreurSQL.getMessage();
@@ -119,7 +165,9 @@ public class EcouteurBoutonAuteur implements MouseListener{
 	public void mouseClicked(MouseEvent e){
 		try {	
 			startConnexion();
+            emailAuteur = (jtEmail.getText().trim().length() != 0) ? jtEmail.getText().trim() : null;
 			addAuteur();
+            noAuteur = getNoAuteur(emailAuteur);
             addContrat();
             endConnexion();
 	      	f.setVisible(false);
