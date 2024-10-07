@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -13,56 +15,56 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 
-public class FenetreAuteur extends JFrame{
+public class FenetreLivre extends JFrame{
 	
-	private JLabel nomAuteur, prenomAuteur, emailAuteur, contratAuteurEditeur1, contratAuteurEditeur2;
-	private JTextField jtNom, jtPrenom, jtEmail;
-    private JComboBox<String> jcEditeurs1, jcEditeurs2;
+	private JLabel titre, prix, type, auteur1, auteur2;
+	private JTextField jtTitre;
+    private JFormattedTextField jfPrix;
+    private JComboBox<String> jcType, jcAuteur1, jcAuteur2;
 	private JButton b;
 	
-	public FenetreAuteur(){
-		super("création d'un auteur");
+	public FenetreLivre(){
+		super("création d'un livre");
 		this.setLayout(new BorderLayout());
 		JPanel p1 = new JPanel(new GridLayout(5,1));
 		JPanel p2 = new JPanel(new GridLayout(5,1));
-		this.nomAuteur = new JLabel("nom de l'auteur : ");
-		this.prenomAuteur = new JLabel("prenom de l'auteur : ");
-		this.emailAuteur = new JLabel("email de l'auteur : ");
-        this.contratAuteurEditeur1 = new JLabel("contrat avec : ");
-        this.contratAuteurEditeur2 = new JLabel("contrat avec : ");
-		this.jtNom = new JTextField();
-		this.jtPrenom = new JTextField();
-		this.jtEmail = new JTextField();
-        this.jcEditeurs1 = new JComboBox<>(this.getEditeurs());
-        this.jcEditeurs2 = new JComboBox<>(this.getEditeurs());
+		this.titre = new JLabel("titre du livre : ");
+		this.prix = new JLabel("prix du livre : ");
+        this.type = new JLabel("type du livre : ");
+        this.auteur1 = new JLabel("auteur du livre : ");
+        this.auteur2 = new JLabel("auteur du livre : ");
+		this.jtTitre = new JTextField();
+		this.jfPrix = new JFormattedTextField(NumberFormat.getIntegerInstance());
+        this.jcType = new JComboBox<>(new Vector<>(Arrays.asList("POCHE", "BD")));  
+		this.jcAuteur1 = new JComboBox<>(this.getAuteurs());
+		this.jcAuteur2 = new JComboBox<>(this.getAuteurs());
 		this.b = new JButton("envoyer");
-		p1.add(nomAuteur);
-		p1.add(prenomAuteur);
-		p1.add(emailAuteur);
-        p1.add(contratAuteurEditeur1);
-        p1.add(contratAuteurEditeur2);
-		p2.add(jtNom);
-		p2.add(jtPrenom);
-		p2.add(jtEmail);
-        p2.add(jcEditeurs1);
-        p2.add(jcEditeurs2);
+		p1.add(titre);
+		p1.add(prix);
+		p1.add(type);
+        p1.add(auteur1);
+        p1.add(auteur2);
+		p2.add(jtTitre);
+		p2.add(jfPrix);
+		p2.add(jcType);
+        p2.add(jcAuteur1);
+        p2.add(jcAuteur2);
 		this.add(p1,BorderLayout.WEST);
 		this.add(p2,BorderLayout.CENTER);
 		this.add(b,BorderLayout.SOUTH);
-		b.addMouseListener(new EcouteurBoutonAuteur(jtNom,jtPrenom,jtEmail,jcEditeurs1,jcEditeurs2,this));
+		b.addMouseListener(new EcouteurBoutonLivre(jtTitre,jfPrix,jcType,jcAuteur1,jcAuteur2,this));
 		this.setSize(400,250);
 		this.setVisible(true);
-
-		this.getEditeurs();
 	}
-	
-	/**
+
+    /**
 	 * retourne un vector de chaine de caractère contenant l'ensemble des noms des éditeurs
 	 * @return
 	 */
-    private Vector<String> getEditeurs(){
-        Vector<String> editeurs = new Vector<>();
+    private Vector<String> getAuteurs(){
+        Vector<String> auteurs = new Vector<>();
 
         String URL = "jdbc:postgresql://localhost:5433/lib2";// tp1_user est le nom de la base
 	    String login = "userpostgres"; // mettre votre login
@@ -75,9 +77,9 @@ public class FenetreAuteur extends JFrame{
 			
 			// requetePreparee est une requête précompilée : cela permet d'éviter les injections sql...
 			Statement requete = conn.createStatement();
-            ResultSet result = requete.executeQuery("SELECT nomediteur FROM editeur");
+            ResultSet result = requete.executeQuery("SELECT prenomauteur, nomauteur FROM auteur");
             while (result.next()) {
-                editeurs.add(result.getString(1));
+                auteurs.add(result.getString(1)+" "+result.getString(2));
             }
 
         }catch(SQLException sqlException){
@@ -87,12 +89,13 @@ public class FenetreAuteur extends JFrame{
         }
 
         
-        return editeurs;
+        return auteurs;
     }
+	
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		FenetreAuteur f = new FenetreAuteur();
+		FenetreLivre f = new FenetreLivre();
 	}
 
 }

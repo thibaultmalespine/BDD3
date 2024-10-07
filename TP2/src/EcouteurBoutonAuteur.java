@@ -11,12 +11,12 @@ public class EcouteurBoutonAuteur implements MouseListener{
 	private JTextField jtNom, jtPrenom, jtEmail;
     private JComboBox<String> jcEditeurs1, jcEditeurs2;
 	private FenetreAuteur f;
-	private static String URL = "jdbc:postgresql://localhost:5432/tp1_user";// tp1_user est le nom de la base
-	private static String login = "postgres"; // mettre votre login
-	private static String password = "postgres"; // mettre votre mot de passe
+	private static String URL = "jdbc:postgresql://localhost:5433/lib2";// tp1_user est le nom de la base
+	private static String login = "userpostgres"; // mettre votre login
+	private static String password = "userpostgres"; // mettre votre mot de passe
 	private Connection conn;
-    private String emailAuteur;
-    private int noAuteur;
+    private String emailauteur;
+    private int noauteur;
 	
 	public EcouteurBoutonAuteur(JTextField jtNom, JTextField jtPrenom, JTextField jtEmail, JComboBox<String> jcEditeurs1, JComboBox<String> jcEditeurs2,FenetreAuteur f){	
 		this.jtNom = jtNom;
@@ -56,11 +56,11 @@ public class EcouteurBoutonAuteur implements MouseListener{
     private void addAuteur() throws SQLException{
                 
         // insertIntoAuteur est une requête précompilée : cela permet d'éviter les injections sql...
-        PreparedStatement insertIntoAuteur = conn.prepareStatement("INSERT INTO auteur(\"nomAuteur\",\"prenomAuteur\",\"emailAuteur\") VALUES (?,?,?)");
+        PreparedStatement insertIntoAuteur = conn.prepareStatement("INSERT INTO auteur VALUES (NEXTVAL('cleAuteur'),?,?,?)");
           
         insertIntoAuteur.setString(1,jtNom.getText());
         insertIntoAuteur.setString(2,jtPrenom.getText().trim());
-        insertIntoAuteur.setString(3,emailAuteur);
+        insertIntoAuteur.setString(3,emailauteur);
 
         // on exécute la requête
         insertIntoAuteur.executeUpdate();
@@ -72,21 +72,21 @@ public class EcouteurBoutonAuteur implements MouseListener{
     private void removeAuteurAndContrat(){
         try {
             // récupérer les contrats avec les editeurs de l'auteur
-            PreparedStatement getContratEditeur = conn.prepareStatement("SELECT \"unEditeur\" FROM contrat WHERE \"unAuteur\" = ?");
-            getContratEditeur.setInt(1, noAuteur);
+            PreparedStatement getContratEditeur = conn.prepareStatement("SELECT unediteur FROM contrat WHERE unauteur = ?");
+            getContratEditeur.setInt(1, noauteur);
             // supprimer tous les contrats
             ResultSet contratsEditeurs = getContratEditeur.executeQuery();
             while (contratsEditeurs.next()) {
                 String nomEditeur = contratsEditeurs.getString(1);
-                PreparedStatement removeContrat = conn.prepareStatement("DELETE FROM contrat WHERE \"unEditeur\" = ? AND \"unAuteur\" = ?" );
+                PreparedStatement removeContrat = conn.prepareStatement("DELETE FROM contrat WHERE unediteur = ? AND unauteur = ?" );
                 removeContrat.setString(1, nomEditeur);
-                removeContrat.setInt(2, noAuteur);
+                removeContrat.setInt(2, noauteur);
                 removeContrat.executeUpdate();
             }   
 
             // supprimer l'auteur
-            PreparedStatement removeAuteur = conn.prepareStatement("DELETE FROM auteur WHERE \"noAuteur\" = ? ");            
-            removeAuteur.setInt(1,noAuteur);
+            PreparedStatement removeAuteur = conn.prepareStatement("DELETE FROM auteur WHERE noauteur = ? ");            
+            removeAuteur.setInt(1,noauteur);
     
             // on exécute la requête
             removeAuteur.executeUpdate();
@@ -106,9 +106,9 @@ public class EcouteurBoutonAuteur implements MouseListener{
         for (String editeur : editeursSelectionnés) {   
     
             // on créer la requête
-            PreparedStatement insertIntoContrat = conn.prepareStatement("INSERT INTO contrat(\"unEditeur\",\"unAuteur\") VALUES(?,?)");
+            PreparedStatement insertIntoContrat = conn.prepareStatement("INSERT INTO contrat(unediteur,unauteur) VALUES(?,?)");
             insertIntoContrat.setString(1, editeur);
-            insertIntoContrat.setInt(2, noAuteur);
+            insertIntoContrat.setInt(2, noauteur);
             
             // on exécute la requête
             insertIntoContrat.executeUpdate();
@@ -118,14 +118,14 @@ public class EcouteurBoutonAuteur implements MouseListener{
 
     /**
      * Réupère le numéro de l'auteur dans la BDD à partir de son email
-     * @param emailAuteur
+     * @param emailauteur
      * @return
      */
-    private int getNoAuteur(String emailAuteur) throws SQLException{
+    private int getNoAuteur(String emailauteur) throws SQLException{
         // on récupère le numéro de l'auteur associé à l'email 
-        PreparedStatement getnoAuteur = conn.prepareStatement("SELECT \"noAuteur\" FROM auteur WHERE \"emailAuteur\" = ?");
-        getnoAuteur.setString(1, emailAuteur);
-        ResultSet result = getnoAuteur.executeQuery();
+        PreparedStatement getNoAuteur = conn.prepareStatement("SELECT noauteur FROM auteur WHERE emailauteur = ?");
+        getNoAuteur.setString(1, emailauteur);
+        ResultSet result = getNoAuteur.executeQuery();
         result.next();
         int noAuteur = result.getInt(1);
 
@@ -148,7 +148,7 @@ public class EcouteurBoutonAuteur implements MouseListener{
 					messageErreur += "<p>Cet email est déjà connu dans la base de donnée</p>";
                     break;
                 case "P0001":
-                    String messageTrigger = erreurSQL.getMessage().split("Where")[0];
+                    String messageTrigger = erreurSQL.getMessage().split("Où")[0];
                     messageTrigger = messageTrigger.split("ERROR:")[1];
                     messageErreur += "<p>"+messageTrigger+"</p>";
                     removeAuteurAndContrat();
@@ -165,9 +165,9 @@ public class EcouteurBoutonAuteur implements MouseListener{
 	public void mouseClicked(MouseEvent e){
 		try {	
 			startConnexion();
-            emailAuteur = (jtEmail.getText().trim().length() != 0) ? jtEmail.getText().trim() : null;
+            emailauteur = (jtEmail.getText().trim().length() != 0) ? jtEmail.getText().trim() : null;
 			addAuteur();
-            noAuteur = getNoAuteur(emailAuteur);
+            noauteur = getNoAuteur(emailauteur);
             addContrat();
             endConnexion();
 	      	f.setVisible(false);
