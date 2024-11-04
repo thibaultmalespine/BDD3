@@ -1,5 +1,7 @@
 
+import java.io.FilterInputStream;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -18,7 +20,7 @@ public class Tp3Etape2 {
 	private static String password = "licinfo2020";
 	private Connection connexion;
 	private Statement stmt;
-	private int nbDeChoix = 5;
+	private int nbDeChoix = 6;
 
 	public Tp3Etape2() {
 		try {
@@ -41,7 +43,8 @@ public class Tp3Etape2 {
 			Scanner scan = new Scanner(System.in);
 			do {
 				System.out.println("Menu\n0=Fin\n1=Lister tous les sports\n2=Ajout d'un sport\n3=Récupérer la liste des sportifs d'un sport"+
-									"\n4=Lister les sportifs qui ont gagnés une médaille d'or individuel\n5=Liste des équipes présentes et leurs membres");
+									"\n4=Lister les sportifs qui ont gagnés une médaille d'or individuel\n5=Liste des équipes présentes et leurs membres"+
+									"\n6=Supprimer un sportif à partir de son nom");
 				res = scan.nextInt();
 				if (res<0 || res > nbDeChoix) {
 					System.out.println("mauvais choix! Recommencez.");
@@ -112,7 +115,6 @@ public class Tp3Etape2 {
 					
 
 				} catch (Exception e) {
-					// TODO: handle exception
 					System.out.println(e.getMessage());
 				}
 				break;
@@ -128,22 +130,65 @@ public class Tp3Etape2 {
 					}
 					System.out.println();
 				} catch (Exception e) {
-					// TODO: handle exception
-					System.out.println(e.getMessage());
-				}
-				break;
-			case 5:
-				try {
-					
-				} catch (Exception e) {
-					// TODO: handle exception
 					System.out.println(e.getMessage());
 				}
 				break;
 
+			// Afficher la liste des équipes présentes et pour chacune le nom des joueurs qui la composent
+			case 5:
+				try {
+					ArrayList<String> equipes = new ArrayList<>();
+
+					PreparedStatement statement = connexion.prepareStatement("SELECT denomination FROM EQUIPE");
+					ResultSet resultSet = statement.executeQuery();
+
+					while (resultSet.next()) {
+						equipes.add(resultSet.getString(1));
+					}
+
+					for (String equipe : equipes) {
+						statement = connexion.prepareStatement("SELECT prenom, nom FROM SPORTIF, APPARTENIR_EQUIPE, EQUIPE "
+															+ "WHERE denomination = ? AND EQUIPE.num_equipe = APPARTENIR_EQUIPE.num_equipe AND SPORTIF.num_licence = APPARTENIR_EQUIPE.num_licence");
+						statement.setString(1, equipe);
+						resultSet = statement.executeQuery();	
+
+						System.out.print(equipe+", ");
+						System.out.println("joueurs qui composent l'équipe : ");
+						while (resultSet.next()) {
+							System.out.print("	"+resultSet.getString(1)+" ");
+							System.out.println(resultSet.getString(2));
+						}
+						System.out.println("");
+					}
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+				}
+				break;
+
+			// Permet de supprimer un sportif donné par son nom
+			case 6:
+				try {
+			
+			
+					Scanner s = new Scanner(System.in);
+					
+					System.out.println("Entrer le nom du sportif à supprimer");
+					String nom = s.nextLine();
+
+					PreparedStatement statement = connexion.prepareStatement("DELETE FROM SPORTIF WHERE nom = ?");
+					statement.setString(1, nom);
+					if (statement.executeUpdate() == 0){
+						System.out.println("le sportif n'a pas été trouvé dans la BDD");
+					}
+					else { System.out.println("le sportif a bien été supprimé");}
+
+				
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+				}
+				break;
 			}
 				
-			
 		}
 		// fermeture de la connexion
 		try {
