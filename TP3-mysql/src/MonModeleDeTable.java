@@ -27,6 +27,7 @@ public class MonModeleDeTable extends AbstractTableModel{
 	public MonModeleDeTable(JFrame frame) {
 		this.frame=frame;
 		majModele();
+		
 	}
 
 	public void majModele() {
@@ -105,6 +106,10 @@ public class MonModeleDeTable extends AbstractTableModel{
 
 	}
 	
+	/**
+	 * Ajoute un sport 
+	 * @param intitule intitulé du sport
+	 */
 	public void addRow(String intitule) {
 		try {
 			PreparedStatement requetePreparee = connexion.prepareStatement("INSERT INTO SPORT(INTITULE) VALUES (?)");
@@ -124,6 +129,32 @@ public class MonModeleDeTable extends AbstractTableModel{
 		
     }
 
+	/**
+	* Supprime un sport 
+	* @param codeSport identifiant du sport
+	*/
+	public void removeRow(String codeSport) {
+		try {
+			PreparedStatement requetePreparee = connexion.prepareStatement("DELETE FROM SPORT WHERE CODE_SPORT = ?");
+			requetePreparee.setString(1, codeSport);
+
+			// on lance la requête
+			int deletedRowCount = requetePreparee.executeUpdate();
+			
+			System.out.println("Suppression réussie : "+deletedRowCount);
+	        JOptionPane.showMessageDialog(null, "Suppression réussie");
+	        fireTableRowsInserted(intitules.size(),intitules.size());
+			majModele();
+			frame.pack();
+		} catch (SQLException c) {
+			System.out.println("Problème lors de la suppression d'un sport : " + c);
+		}
+		
+    }
+	/**
+	 * Permet d'obtenir la liste des sports
+	 * @return la liste des sports
+	 */
 	public ArrayList<String> getSports(){
 		ArrayList<String> sports = new ArrayList<>();
 		try {
@@ -139,6 +170,26 @@ public class MonModeleDeTable extends AbstractTableModel{
 		return sports;
 	}
 
+	/**
+	 * Permet d'obtenir la liste des sportifs d'une discipline
+	 * @param codeSport identifiant du sport
+	 * @return	la liste des sportifs 
+	 */
+	public ArrayList<String[]> getSportifs(String codeSport){
+		ArrayList<String[]> sportifs = new ArrayList<>();
+		try {
+			PreparedStatement statement = connexion.prepareStatement("SELECT prenom, nom FROM SPORTIF WHERE code_sport = ?");
+		    statement.setString(1, codeSport);
+			ResultSet result = statement.executeQuery();
+            while (result.next()) {
+				sportifs.add(new String[] {result.getString(1), result.getString(2)});
+			}
+
+		} catch (SQLException e) {
+			e.getMessage();
+		}
+		return sportifs;
+	}	
 	
 
 }
