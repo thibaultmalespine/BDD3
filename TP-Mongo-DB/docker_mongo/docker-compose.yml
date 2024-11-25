@@ -5,5 +5,5 @@ services:
         container_name: ngarric_mongodb
         image: "mongo"
         volumes:
-            - ~/docker:/data/db
+            - ./mongo:/data/db
        

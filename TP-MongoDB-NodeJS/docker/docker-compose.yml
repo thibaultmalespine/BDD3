@@ -1,0 +1,23 @@
+version: "2"
+
+services:
+    
+    nodeserver:
+        container_name: ngarric_node
+        image: "node:alpine"
+        user: "node"
+        working_dir: /home/node/app
+        volumes:
+            - ~/docker/node:/home/node/app
+        ports:
+            - "10041:3000"
+        command: "npm start"
+        
+    mongodb:
+        container_name: ngarric_mongodb
+        image: "mongo:7.0"
+
+        volumes:
+            - ~/docker/mongo:/data/db
+
+
