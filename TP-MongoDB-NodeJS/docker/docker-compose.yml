@@ -6,18 +6,18 @@ services:
         container_name: ngarric_node
         image: "node:alpine"
         user: "node"
-        working_dir: /home/node/app
+        working_dir: /home/node/
         volumes:
-            - ~/docker/node:/home/node/app
+            - ./node:/home/node/
         ports:
             - "10041:3000"
         command: "npm start"
         
     mongodb:
-        container_name: ngarric_mongodb
+        container_name: ngarric_mongodb2
         image: "mongo:7.0"
 
         volumes:
-            - ~/docker/mongo:/data/db
+            - ./mongo:/data/db
 
 

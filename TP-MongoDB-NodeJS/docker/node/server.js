@@ -1,3 +1,4 @@
+const { log } = require('console');
 const express = require('express')
 const app = express();
 app.use(express.json());
@@ -14,6 +15,8 @@ const client = new MongoClient(url_db, {
 	}
 }
 );
+
+
 async function users(req, res) {
 	
 	try {
@@ -37,8 +40,8 @@ app.get('/users', (req, res) => {
 async function addUser(req, res) {
 	try {	
 		await client.connect();
-		console.log(req.query.username);
-		var result = await client.db("test").collection("users").insertOne({ username: req.query.username});
+		const {username} = req.body;
+		var result = await client.db("test").collection("users").insertOne({ username: username});
 		console.log(result);
 		res.json({message: "ajout effectuÃ© !"});
 	} catch(err){
@@ -51,9 +54,35 @@ async function addUser(req, res) {
 	}
 }
 
-app.get('/addUser', function (req, res) {
+app.post('/addUser', function (req, res) {
 	addUser(req, res);
 });
+
+app.get('/admins', async (req, res) => {
+	await client.connect();
+
+	var result = await client.db("test").collection("admins").find({ admin: true}).toArray();
+	res.json(result);
+})
+
+app.post('/addAdmin', async (req, res) => {
+	console.log("in");
+	try {	
+		await client.connect();
+		const {username} = req.body;
+		var result = await client.db("test").collection("admins").insertOne({ username: username, admin : true});
+		console.log(result);
+		res.json({message: "ajout effectuÃ© !"});
+	} catch(err){
+		console.log("problÃ¨me addUser : "+err);
+		res.json({message: "problÃ¨me : "+err});
+	} 
+	finally {
+		// on ferme la connexion Ã  la BDD quoi qu'il arrive
+		await client.close();
+	}
+})
+
 
 app.use('/', express.static('website'));
 

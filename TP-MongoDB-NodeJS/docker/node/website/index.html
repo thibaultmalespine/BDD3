@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="users.js"></script>
+  <script src="admin.js"></script>
+</head>
+
+<body>
+  <h1>Listes des users</h1>
+  <h1>Users</h1>
+  <ul id="users"></ul>
+  <h1>Admins</h1>
+  <ul id="admins"></ul>
+
+  <h1>Ajout d'un user </h1>
+  <form onsubmit="return false;">
+    <input type="text" id="ajout_user" placeholder="Nouveau user" name="user" required>
+    <button id="valider" type="submit">Ajouter</button>
+  </form>
+  <h1>Ajout d'un admin </h1>
+
+  <form onsubmit="return false;">
+    <input type="text" id="ajout_admin" placeholder="Nouveau admin" name="admin" required>
+    <button id="validerAdmin" type="submit">Ajouter</button>
+  </form>
+
+</body>
+
+</html>
